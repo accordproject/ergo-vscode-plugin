@@ -1,0 +1,35 @@
+{
+    "name": "ergo",
+    "displayName": "ergo",
+    "description": "Syntax Highlighting for Ergo, the smart legal contract programming language.",
+    "version": "0.0.1",
+    "publisher": "accordproject",
+    "engines": {
+        "vscode": "^1.23.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "ergo",
+                "aliases": [
+                    "Ergo",
+                    "ergo"
+                ],
+                "extensions": [
+                    ".ergo"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "ergo",
+                "scopeName": "source.ergo",
+                "path": "./syntaxes/ergo.tmLanguage.json"
+            }
+        ]
+    }
+}
