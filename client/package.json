@@ -1,0 +1,149 @@
+{
+	"name": "accordproject-vscode-plugin",
+	"displayName": "Accord Project",
+	"description": "Accord Project plugin for Visual Studio Code to provide syntax highlighting for Ergo code (.ergo) and template grammar (.tem) files.",
+	"author": "Clause",
+	"license": "Apache-2.0",
+	"version": "0.0.1",
+	"publisher": "accordproject",
+	"icon": "icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/accordproject/ergo-vscode-plugin"
+	},
+	"engines": {
+		"vscode": "^1.15.0"
+	},
+	"scripts": {
+		"compile:client": "tsc -p ./",
+		"watch:client": "tsc -w -p ./",
+		"update-vscode": "node ./node_modules/vscode/bin/install",
+		"licchk": "license-check-and-add",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"package:vsix": "node ./node_modules/vsce/out/vsce package",
+		"prepublish": "tsc -p ./",
+		"pretest": "npm run lint & npm run licchk",
+		"test": "nyc node ./node_modules/vscode/bin/test --compilers ts:ts-node/register ./test/*.test.ts",
+		"tslint": "tslint",
+		"lint": "npm run tslint 'src/**/*.ts' 'test/extension.test.ts'"
+	},
+	"devDependencies": {
+		"license-check-and-add": "~2.3.0",
+		"nyc": "^11.4.1",
+		"tslint": "^5.9.1",
+		"typescript": "^2.6.2",
+		"vsce": "^1.39.0",
+		"vscode": "^1.1.5"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^3.5.1"
+	},
+	"activationEvents": [
+		"onLanguage:ergo"
+	],
+	"main": "./out/src/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Multi LSP configuration",
+			"properties": {
+				"lspMultiServerSample.enable": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": true,
+					"description": "Controls the enablement."
+				},
+				"lspMultiServerSample.options": {
+					"scope": "resource",
+					"type": "object",
+					"default": {},
+					"description": "Additional options."
+				},
+				"lspMultiServerSample.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VSCode and the language server."
+				}
+			}
+		},
+		"languages": [
+			{
+				"id": "ergo",
+				"aliases": [
+					"Ergo",
+					"ergo"
+				],
+				"extensions": [
+					".ergo"
+				],
+				"configuration": "./ergo.language-configuration.json"
+			},
+			{
+				"id": "cicero-tem",
+				"aliases": [
+					"Cicero Template",
+					"cicero"
+				],
+				"extensions": [
+					".tem"
+				],
+				"configuration": "./cicero-template.language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "ergo",
+				"scopeName": "source.ergo",
+				"path": "./syntaxes/ergo.tmLanguage.json"
+			},
+			{
+				"language": "cicero-tem",
+				"scopeName": "source.cicero-tem",
+				"path": "./syntaxes/cicero-template.tmLanguage.json"
+			}
+		]
+	},
+	"license-check-and-add-config": {
+		"folder": ".",
+		"license": "LICENSE.txt",
+		"exact_paths_method": "EXCLUDE",
+		"exact_paths": [
+			"node_modules",
+			"out",
+			"server",
+			".vscode-test",
+			"coverage"
+		],
+		"file_type_method": "EXCLUDE",
+		"file_types": [
+			".txt",
+			".vsix",
+			".DS_Store",
+			".vscodeignore"
+		],
+		"insert_license": true,
+		"license_formats": {
+			"ts|acl|cto|js|qry|ergo": {
+				"prepend": "/*",
+				"append": "*/",
+				"eachLine": {
+					"prepend": " * "
+				}
+			},
+			"vscodeignore": {
+				"eachLine": {
+					"prepend": "# "
+				}
+			},
+			"md": {
+				"file": "../markdown-license.txt"
+			}
+		}
+	}
+}

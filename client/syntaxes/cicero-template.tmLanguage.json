@@ -1,0 +1,193 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Cicero Template",
+	"scopeName": "source.cicero-tem",
+	"fileTypes": [
+		".tem"
+	],
+	"patterns": [
+		{  
+			"include": "#cicero-variable"       
+		},
+		{  
+			"include": "#double-square-bracket-variable"       
+		},
+		{  
+			"include": "#double-curly-bracket-variable"       
+		},
+		{  
+			"include": "#double-angle-bracket-variable"       
+		},
+		{  
+			"include": "#square-bracket-variable"     
+		},
+		{  
+			"include": "#curly-bracket-variable"       
+		},
+		{  
+			"include": "#angle-bracket-variable"       
+		}
+	],
+	"repository": {
+		"cicero-variable": {
+			"name": "cicero-variable.cicero-tem",
+			"begin": "(\\[\\{)",
+			"beginCaptures": {
+				"0": {
+					"name": "variable.string.begin.cicero-tem"
+				}
+			},
+			"end": "(\\}\\])",
+			"endCaptures": {
+				"0": {
+					"name": "variable.string.end.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"name": "variable.boolean-binding.cicero-tem",
+					"match": "\"([^\"]*)\":\\?\\s*([_$[:alpha:]][_$[:alnum:]]*)",
+					"captures": {
+						"0": { "name" : "constant.character.cicero-tem" },
+						"1": { "name" : "variable.character.cicero-tem" }
+					}
+				},
+				{	
+					"name": "keyword.character.cicero-tem",
+					"match": "([_$[:alpha:]][_$[:alnum:]]*)"
+				},
+				{
+					"include": "#clause-binding"
+				}
+			]
+		},
+		"square-bracket-variable": {
+			"name": "square-bracket-variable.cicero-tem",
+			"begin": "\\[",
+			"beginCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"double-square-bracket-variable": {
+			"name": "double-square-bracket-variable.cicero-tem",
+			"begin": "\\[\\[",
+			"beginCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"end": "\\]\\]",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"curly-bracket-variable": {
+			"name": "curly-bracket-variable.cicero-tem",
+			"begin": "\\{",
+			"beginCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"end": "\\}",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"double-curly-bracket-variable": {
+			"name": "double-curly-bracket-variable.cicero-tem",
+			"begin": "\\{\\{",
+				"beginCaptures": {
+					"0": {
+						"name": "invalid.illegal.cicero-tem"
+					}
+				},
+			"end": "\\}\\}",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"angle-bracket-variable": {
+			"name": "angle-bracket-variable.cicero-tem",
+			"begin": "<",
+			"beginCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"end": ">",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"double-angle-bracket-variable": {
+			"name": "double-angle-bracket-variable.cicero-tem",
+			"begin": "<<",
+				"beginCaptures": {
+					"0": {
+						"name": "invalid.illegal.cicero-tem"
+					}
+				},
+			"end": ">>",
+			"endCaptures": {
+				"0": {
+					"name": "invalid.illegal.cicero-tem"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#identifier"
+				}
+			]
+		},
+		"identifier": {
+			"patterns": [
+				{	
+					"name": "invalid.illegal.cicero-tem",
+					"match": "([_$[:alpha:]][_$[:alnum:]]*)"
+				}
+			]
+		}
+	}
+}

@@ -1,18 +1,35 @@
-// A launch configuration that launches the extension inside a new window
-// Use IntelliSense to learn about possible attributes.
-// Hover to view descriptions of existing attributes.
-// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
 	"version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Extension",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
-            ]
-        }
-    ]
+	// List of configurations. Add new configurations or edit existing ones.
+	"configurations": [
+		{
+			"name": "Launch Client",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}/client" ],
+			"stopOnEntry": false,
+			"sourceMaps": true,
+			"outFiles": [ "${workspaceRoot}/client/out/src/**/*.js" ],
+			"preLaunchTask": "watch:client"
+		},
+		{
+			"name": "Attach to Server 11",
+			"type": "node",
+			"request": "attach",
+			"port": 6011,
+			"sourceMaps": true,
+			"outFiles": [ "${workspaceRoot}/client/server/**/*.js" ],
+			"preLaunchTask": "watch:server"
+		},
+		{
+			"name": "Attach to Server 12",
+			"type": "node",
+			"request": "attach",
+			"port": 6012,
+			"sourceMaps": true,
+			"outFiles": [ "${workspaceRoot}/client/server/**/*.js" ],
+			"preLaunchTask": "watch:server"
+		}		
+	]
 }

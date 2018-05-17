@@ -128,9 +128,6 @@
 					"include": "#return-type"
 				},
 				{
-					"include": "#function-overload-declaration"
-				},
-				{
 					"include": "#decl-block"
 				}
 			]
@@ -149,9 +146,6 @@
 			"end": "(?=$|;|}|(\\s+(of|in)\\s+))",
 			"patterns": [
 				{
-					"include": "#destructuring-variable"
-				},
-				{
 					"include": "#var-single-variable"
 				},
 				{
@@ -162,6 +156,24 @@
 				},
 				{
 					"include": "#punctuation-comma"
+				}
+			]
+		},
+		"enforce-expr": {
+			"name": "meta.enforce.ergo",
+			"begin": "(?<!\\.|\\$)((\\benforce)\\s+)(?!\\$)",
+			"beginCaptures": {
+				"2": {
+					"name": "keyword.control.enforce.ergo"
+				}
+			},
+			"end": "(?=$|;|}|(\\s+(of|in)\\s+))",
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"include": "#comment"
 				}
 			]
 		},
@@ -183,42 +195,6 @@
 				},
 				{
 					"include": "#comment"
-				}
-			]
-		},
-		"destructuring-variable": {
-			"patterns": [
-				{
-					"name": "meta.object-binding-pattern-variable.ergo",
-					"begin": "(?<!=|:|of|in)\\s*(?=\\{)",
-					"end": "(?=$|[;,=}]|(\\s+(of|in)\\s+))",
-					"patterns": [
-						{
-							"include": "#object-binding-pattern"
-						},
-						{
-							"include": "#type-annotation"
-						},
-						{
-							"include": "#comment"
-						}
-					]
-				},
-				{
-					"name": "meta.array-binding-pattern-variable.ergo",
-					"begin": "(?<!=|:|of|in)\\s*(?=\\[)",
-					"end": "(?=$|[;,=}]|(\\s+(of|in)\\s+))",
-					"patterns": [
-						{
-							"include": "#array-binding-pattern"
-						},
-						{
-							"include": "#type-annotation"
-						},
-						{
-							"include": "#comment"
-						}
-					]
 				}
 			]
 		},
@@ -278,9 +254,6 @@
 				},
 				{
 					"include": "#array-binding-pattern"
-				},
-				{
-					"include": "#destructuring-variable-rest"
 				},
 				{
 					"include": "#variable-initializer"
@@ -445,7 +418,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.flow.ergo",
-					"match": "(?<!\\.|\\$)\\b(return)\\b(?!\\$)"
+					"match": "(?<!\\.|\\$)\\b(return|(set\\s+state)|emit)\\b(?!\\$)"
 				},
 				{
 					"name": "keyword.control.match.ergo",
@@ -453,7 +426,7 @@
 				},
 				{
 					"name": "keyword.control.conditional.ergo",
-					"match": "(?<!\\.|\\$)\\b(else|if)\\b(?!\\$)"
+					"match": "(?<!\\.|\\$)\\b(else|if|then)\\b(?!\\$)"
 				}
 			]
 		},
@@ -471,6 +444,9 @@
 				},
 				{
 					"include": "#var-expr"
+				},
+				{
+					"include": "#enforce-expr"
 				},
 				{
 					"include": "#function-declaration"
@@ -1281,33 +1257,9 @@
 					"include": "#return-type"
 				},
 				{
-					"include": "#function-overload-declaration"
-				},
-				{
 					"include": "#decl-block"
 				}
 			]
-		},
-		"function-overload-declaration": {
-			"name": "meta.function.overload.ergo",
-			"match": "(?<!\\.|\\$)\\b(?:(export)\\s+)?(?:(async)\\s+)?(function\\b)(?:\\s*(\\*))?(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*))?\\s*",
-			"captures": {
-				"1": {
-					"name": "keyword.control.export.ergo"
-				},
-				"2": {
-					"name": "storage.modifier.async.ergo"
-				},
-				"3": {
-					"name": "storage.type.function.ergo"
-				},
-				"4": {
-					"name": "keyword.generator.asterisk.ergo"
-				},
-				"5": {
-					"name": "entity.name.function.ergo"
-				}
-			}
 		},
 		"object-literal": {
 			"name": "meta.objectliteral.ergo",
@@ -1556,6 +1508,24 @@
 				}
 			]
 		},
+		"throws-declaration": {
+			"name": "meta.clause.throws.ergo",
+			"begin": "\\b(throws)\\b",
+			"beginCaptures": {
+				"0": {
+					"name": "keyword.control.throws.ergo"
+				}
+			},
+			"end": "(?<!:)((?=$)|(?=\\{|;|//|\\}))",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#type"
+				}
+			]
+		},
 		"return-type": {
 			"name": "meta.return.type.ergo",
 			"begin": "(?<=\\))\\s*(:)",
@@ -1570,36 +1540,12 @@
 					"include": "#comment"
 				},
 				{
-					"name": "meta.object.type.ergo",
-					"begin": "(?<=:)\\s*(\\{)",
-					"beginCaptures": {
-						"1": {
-							"name": "punctuation.definition.block.ergo"
-						}
-					},
-					"end": "\\}",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.block.ergo"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#type-object-members"
-						}
-					]
-				},
-				{
-					"include": "#type-predicate-operator"
+					"include": "#throws-declaration"
 				},
 				{
 					"include": "#type"
 				}
 			]
-		},
-		"type-predicate-operator": {
-			"name": "keyword.operator.expression.is.ergo",
-			"match": "(?<!\\.|\\$)\\bis\\b(?!\\$)"
 		},
 		"type-annotation": {
 			"name": "meta.type.annotation.ergo",
@@ -1826,9 +1772,6 @@
 					]
 				},
 				{
-					"include": "#type-predicate-operator"
-				},
-				{
 					"include": "#type"
 				}
 			]
@@ -1920,7 +1863,7 @@
 			]
 		},
 		"for-loop": {
-			"begin": "(?<!\\.|\\$)\\b(for)\\s*(\\()",
+			"begin": "(?<!\\.|\\$)\\b(foreach)\\s*(\\()",
 			"beginCaptures": {
 				"1": {
 					"name": "keyword.control.loop.ergo"
@@ -2612,9 +2555,6 @@
 			},
 			"end": "(?<!:)((?=$)|(?==>|;|//))",
 			"patterns": [
-				{
-					"include": "#type-predicate-operator"
-				},
 				{
 					"include": "#type"
 				}
