@@ -7,8 +7,17 @@ and reports any validation errors. It will provide syntax highlighting for templ
 
 Support for model files (.cto) is provided by the [Hyperledger Composer VSCode plugin](https://marketplace.visualstudio.com/items?itemName=HyperledgerComposer.composer-support-client)
 
+## For Template Authors
 
-## Manual Build and Install
+If you want to use this plugin:
+1. Download and install VSCode from https://code.visualstudio.com/download
+2. From the extensions view in VSCode, search for "Accord Project", click the `Install` button to install it
+
+The extension is available from the Visual Studio Marketplace at https://marketplace.visualstudio.com/items?itemName=accordproject.accordproject-vscode-plugin
+
+## For Contributors
+
+### Manual Build and Install
 
 Generate the installable VSIX file:
 
@@ -29,12 +38,12 @@ npm run package:vsix
 5. Install and restart VSCode
 6. Open a .cto file
 
-# Travis CI build
+### Travis CI build
 Developers no longer need a manual build, once you have created a pull request from your private Github repository. The build will be automatically performed by Travis.
 A successful build will create an installable VSIX file on the build machine. 
 The public release version number is defined in the Client package.json file. 
 
-## Publish Release
+#### Publish Release
 Below are steps for publishing a release.
 1. Go to https://github.com/accordproject/ergo-vscode-plugin
 2. Click Releases tab
@@ -45,15 +54,15 @@ Below are steps for publishing a release.
 7. Uncheck the box for This is a pre-release at the end of this page
 8. Click Publish release button to publish the VSIX file to the VSCode Marketplace
 
-## Check the published release
+#### Check the published release
 1. Go to the VSCode Marketplace: https://marketplace.visualstudio.com/
 2. Type Accord Project in the search field and hit return key or search button
 3. This will bring you to https://marketplace.visualstudio.com/search?term=Accord%20Project&target=VSCode&category=All%20categories&sortBy=Relevance
 
-## Install a new release
+#### Install a new release
 1. Open Visual Studio Code in your desktop
 2. Open the Extensions by View-->Extensions or Ctrl(cmd)+Shift+x 
-3. Search for Composer
+3. Search for Accord Project
 4. The new published Accord Project plugin is showing on the list
 5. Click Install button to install it
 6. Update button will be shown if you have already installed the same plugin before.
