@@ -47,14 +47,14 @@ Below are steps for publishing a release.
 
 ## Check the published release
 1. Go to the VSCode Marketplace: https://marketplace.visualstudio.com/
-2. Type Composer in the search field and hit return key or search button
-3. This will bring you to https://marketplace.visualstudio.com/search?term=Composer&target=VSCode&category=All%20categories&sortBy=Relevance
+2. Type Accord Project in the search field and hit return key or search button
+3. This will bring you to https://marketplace.visualstudio.com/search?term=Accord%20Project&target=VSCode&category=All%20categories&sortBy=Relevance
 
 ## Install a new release
 1. Open Visual Studio Code in your desktop
 2. Open the Extensions by View-->Extensions or Ctrl(cmd)+Shift+x 
 3. Search for Composer
-4. The new published Accord Project 0.7.1 is showing on the list
+4. The new published Accord Project plugin is showing on the list
 5. Click Install button to install it
 6. Update button will be shown if you have already installed the same plugin before.
 
