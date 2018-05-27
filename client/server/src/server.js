@@ -46,8 +46,8 @@ function validateTextDocument(textDocument) {
             diagnostics.push({
                 severity: vscode_languageserver_1.DiagnosticSeverity.Error,
                 range: {
-                    start: { line: compiled.error.locstart.line, character: compiled.error.locstart.character },
-                    end: { line: compiled.error.locend.line, character: compiled.error.locend.character },
+                    start: { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character },
+                    end: { line: compiled.error.locend.line - 1, character: compiled.error.locend.character },
                 },
                 message: compiled.error.message,
                 source: 'ergo'

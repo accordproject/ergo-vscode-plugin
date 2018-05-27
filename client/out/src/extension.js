@@ -33,13 +33,13 @@ function activate(context) {
         documentSelector: [{ scheme: 'file', language: 'ergo' }],
         synchronize: {
             // Synchronize the setting section 'languageServerExample' to the server
-            configurationSection: 'lspSample',
+            configurationSection: 'Ergo',
             // Notify the server about file changes to '.clientrc files contain in the workspace
             fileEvents: vscode_1.workspace.createFileSystemWatcher('**/.clientrc')
         }
     };
     // Create the language client and start the client.
-    let disposable = new vscode_languageclient_1.LanguageClient('lspSample', 'Language Server Example', serverOptions, clientOptions).start();
+    let disposable = new vscode_languageclient_1.LanguageClient('Ergo', 'Ergo', serverOptions, clientOptions).start();
     // Push the disposable to the context's subscriptions so that the 
     // client can be deactivated on extension deactivation
     context.subscriptions.push(disposable);

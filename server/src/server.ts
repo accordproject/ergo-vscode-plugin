@@ -47,8 +47,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
         diagnostics.push({
             severity: DiagnosticSeverity.Error,
             range: {
-                start: { line: compiled.error.locstart.line, character: compiled.error.locstart.character },
-                end:  { line: compiled.error.locend.line, character: compiled.error.locend.character },
+                start: { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character },
+                end:  { line: compiled.error.locend.line-1, character: compiled.error.locend.character },
             },
             message: compiled.error.message,
             source: 'ergo'

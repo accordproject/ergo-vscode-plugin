@@ -51,35 +51,6 @@
 	],
 	"main": "./out/src/extension",
 	"contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "Multi LSP configuration",
-			"properties": {
-				"lspMultiServerSample.enable": {
-					"scope": "resource",
-					"type": "boolean",
-					"default": true,
-					"description": "Controls the enablement."
-				},
-				"lspMultiServerSample.options": {
-					"scope": "resource",
-					"type": "object",
-					"default": {},
-					"description": "Additional options."
-				},
-				"lspMultiServerSample.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VSCode and the language server."
-				}
-			}
-		},
 		"languages": [
 			{
 				"id": "ergo",
