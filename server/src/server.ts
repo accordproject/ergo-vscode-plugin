@@ -42,20 +42,15 @@ documents.onDidChangeContent(async (change) => {
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	let diagnostics: Diagnostic[] = [];
-	const compiled = await Ergo.compile(textDocument.getText(), [], 'javascript_cicero');
-    const regex = /^Parse error \[At line ([0-9]*) column ([0-9]+): ([a-zA-Z0-9\s]+)\]/;
-    var match = regex.exec(compiled.error);
-    if(match !== null) {
-        const line = Number.parseInt(match[1]);
-        const column = Number.parseInt(match[2]);
-        const message = match[3];
+    const compiled = await Ergo.compile(textDocument.getText(), [], 'javascript_cicero');
+    if(compiled.error) {
         diagnostics.push({
             severity: DiagnosticSeverity.Error,
             range: {
-                start: { line: line-1, character: column },
-                end: { line: line-1, character: column }
+                start: { line: compiled.error.locstart.line, character: compiled.error.locstart.character },
+                end:  { line: compiled.error.locend.line, character: compiled.error.locend.character },
             },
-            message: message,
+            message: compiled.error.message,
             source: 'ergo'
         });
     }
