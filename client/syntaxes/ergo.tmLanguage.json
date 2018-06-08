@@ -161,7 +161,7 @@
 		},
 		"enforce-expr": {
 			"name": "meta.enforce.ergo",
-			"begin": "(?<!\\.|\\$)((\\benforce)\\s+)(?!\\$)",
+			"begin": "(?<!\\.|\\$)((\\benforce)\\s*)(?!\\$)",
 			"beginCaptures": {
 				"2": {
 					"name": "keyword.control.enforce.ergo"
