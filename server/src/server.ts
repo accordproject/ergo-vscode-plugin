@@ -7,6 +7,7 @@ import {
 import * as Ergo from '@accordproject/ergo-compiler/lib/ergo';
 import { glob } from 'glob';
 import * as fs from "fs";
+import { ModelManager, ModelFile } from 'composer-common';
 
 // Creates the LSP connection
 let connection = createConnection(ProposedFeatures.all);
@@ -16,6 +17,8 @@ let documents = new TextDocuments();
 
 // The workspace folder this server is operating on
 let workspaceFolder: string;
+
+let modelManager = new ModelManager();
 
 documents.onDidOpen((event) => {
 	connection.console.log(`[Server(${process.pid}) ${workspaceFolder}] Document opened: ${event.document.uri}`);
@@ -42,42 +45,67 @@ documents.onDidChangeContent(async (change) => {
     documents.all().forEach(validateTextDocument);
 });
 
+// This function is not currently triggered by changes to model files, only ergo files
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     let diagnostics: Diagnostic[] = [];
-    const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
-    const modelFilesContents = [];
-    const modelFiles = glob.sync(folder+"/**/*.cto");
-    for (const file of modelFiles) {
-        modelFilesContents.push(fs.readFileSync(file, 'utf8'));
-    }
     try {
+        // Find all cto files in ../ relative to this file
+        const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
+        const modelFilesContents = [];
+        let newModels = false;
+        const modelFiles = glob.sync(folder+"../**/*.cto");
+        for (const file of modelFiles) {
+            const contents = fs.readFileSync(file, 'utf8');
+            const modelFile: any = new ModelFile(modelManager, contents, file);
+            if (!modelManager.getModelFile(modelFile.getNamespace())) {
+                // only add if not existing
+                modelManager.addModelFile(contents, file, true);
+                newModels = true;
+            }
+        }
+        // Only pull external models if a new file was added to the model manager
+        if(newModels){
+            await modelManager.updateExternalModels();
+        }
+        modelManager.getModelFiles().map((f) => {
+            modelFilesContents.push(f.getDefinitions());
+        });
+        
         const compiled = await Ergo.compile(textDocument.getText(), modelFilesContents, 'javascript_cicero');
         if(compiled.error) {
-            diagnostics.push({
-                severity: DiagnosticSeverity.Error,
-                range: {
-                    start: { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character },
-                    end:  { line: compiled.error.locend.line-1, character: compiled.error.locend.character },
-                },
-                message: compiled.error.message,
-                source: 'ergo'
-            });
-        }
-    } catch (error) {
-        if(error.name === 'SyntaxError'){
-            diagnostics.push({
-                severity: DiagnosticSeverity.Error,
-                message: error.message,
-                range: {
+            if(compiled.error.kind === 'CompilationError'){
+                const range = {
                     start: { line: 0, character: 0 },
                     end:  { line: 0, character: 0 },
-                },
-                source: 'cto'
-            });
-        } else {
-            connection.console.error(error);
+                };
+                if(compiled.error.locstart.line > 0) {
+                    range.start =  { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character };
+                    range.end = range.start;
+                }
+                if(compiled.error.locend.line > 0) {
+                    range.end = { line: compiled.error.locend.line-1, character: compiled.error.locend.character };
+                }
+                diagnostics.push({
+                    severity: DiagnosticSeverity.Error,
+                    range,
+                    message: compiled.error.message,
+                    source: 'ergo'
+                });
+            } else {
+                diagnostics.push({
+                    severity: DiagnosticSeverity.Error,
+                    range: {
+                        start: { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character },
+                        end:  { line: compiled.error.locend.line-1, character: compiled.error.locend.character },
+                    },
+                    message: compiled.error.message,
+                    source: 'ergo'
+                });
+            }
         }
-
+    } catch (error) {
+        connection.console.error(error.message);
+        connection.console.error(error.stack);
     }
 
     // Send the computed diagnostics to VS Code.

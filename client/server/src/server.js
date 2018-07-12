@@ -12,12 +12,14 @@ const vscode_languageserver_1 = require("vscode-languageserver");
 const Ergo = require("@accordproject/ergo-compiler/lib/ergo");
 const glob_1 = require("glob");
 const fs = require("fs");
+const composer_common_1 = require("composer-common");
 // Creates the LSP connection
 let connection = vscode_languageserver_1.createConnection(vscode_languageserver_1.ProposedFeatures.all);
 // Create a manager for open text documents
 let documents = new vscode_languageserver_1.TextDocuments();
 // The workspace folder this server is operating on
 let workspaceFolder;
+let modelManager = new composer_common_1.ModelManager();
 documents.onDidOpen((event) => {
     connection.console.log(`[Server(${process.pid}) ${workspaceFolder}] Document opened: ${event.document.uri}`);
 });
@@ -40,44 +42,69 @@ documents.onDidChangeContent((change) => __awaiter(this, void 0, void 0, functio
     // Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
 }));
+// This function is not currently triggered by changes to model files, only ergo files
 function validateTextDocument(textDocument) {
     return __awaiter(this, void 0, void 0, function* () {
         let diagnostics = [];
-        const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
-        const modelFilesContents = [];
-        const modelFiles = glob_1.glob.sync(folder + "/**/*.cto");
-        for (const file of modelFiles) {
-            modelFilesContents.push(fs.readFileSync(file, 'utf8'));
-        }
         try {
+            // Find all cto files in ../ relative to this file
+            const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
+            const modelFilesContents = [];
+            let newModels = false;
+            const modelFiles = glob_1.glob.sync(folder + "../**/*.cto");
+            for (const file of modelFiles) {
+                const contents = fs.readFileSync(file, 'utf8');
+                const modelFile = new composer_common_1.ModelFile(modelManager, contents, file);
+                if (!modelManager.getModelFile(modelFile.getNamespace())) {
+                    // only add if not existing
+                    modelManager.addModelFile(contents, file, true);
+                    newModels = true;
+                }
+            }
+            // Only pull external models if a new file was added to the model manager
+            if (newModels) {
+                yield modelManager.updateExternalModels();
+            }
+            modelManager.getModelFiles().map((f) => {
+                modelFilesContents.push(f.getDefinitions());
+            });
             const compiled = yield Ergo.compile(textDocument.getText(), modelFilesContents, 'javascript_cicero');
             if (compiled.error) {
-                diagnostics.push({
-                    severity: vscode_languageserver_1.DiagnosticSeverity.Error,
-                    range: {
-                        start: { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character },
-                        end: { line: compiled.error.locend.line - 1, character: compiled.error.locend.character },
-                    },
-                    message: compiled.error.message,
-                    source: 'ergo'
-                });
+                if (compiled.error.kind === 'CompilationError') {
+                    const range = {
+                        start: { line: 0, character: 0 },
+                        end: { line: 0, character: 0 },
+                    };
+                    if (compiled.error.locstart.line > 0) {
+                        range.start = { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character };
+                        range.end = range.start;
+                    }
+                    if (compiled.error.locend.line > 0) {
+                        range.end = { line: compiled.error.locend.line - 1, character: compiled.error.locend.character };
+                    }
+                    diagnostics.push({
+                        severity: vscode_languageserver_1.DiagnosticSeverity.Error,
+                        range,
+                        message: compiled.error.message,
+                        source: 'ergo'
+                    });
+                }
+                else {
+                    diagnostics.push({
+                        severity: vscode_languageserver_1.DiagnosticSeverity.Error,
+                        range: {
+                            start: { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character },
+                            end: { line: compiled.error.locend.line - 1, character: compiled.error.locend.character },
+                        },
+                        message: compiled.error.message,
+                        source: 'ergo'
+                    });
+                }
             }
         }
         catch (error) {
-            if (error.name === 'SyntaxError') {
-                diagnostics.push({
-                    severity: vscode_languageserver_1.DiagnosticSeverity.Error,
-                    message: error.message,
-                    range: {
-                        start: { line: 0, character: 0 },
-                        end: { line: 0, character: 0 },
-                    },
-                    source: 'cto'
-                });
-            }
-            else {
-                connection.console.error(error);
-            }
+            connection.console.error(error.message);
+            connection.console.error(error.stack);
         }
         // Send the computed diagnostics to VS Code.
         connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
