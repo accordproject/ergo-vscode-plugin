@@ -4,7 +4,7 @@
 	"description": "Accord Project plugin for Visual Studio Code to provide syntax highlighting for Ergo code (.ergo) and template grammar (.tem) files.",
 	"author": "Clause",
 	"license": "Apache-2.0",
-	"version": "0.0.63",
+	"version": "0.1.2",
 	"publisher": "accordproject",
 	"icon": "icon.png",
 	"repository": {
@@ -12,7 +12,7 @@
 		"url": "https://github.com/accordproject/ergo-vscode-plugin"
 	},
 	"engines": {
-		"vscode": "^1.15.0"
+		"vscode": "^1.23.0"
 	},
 	"scripts": {
 		"compile:client": "tsc -p ./",
@@ -41,10 +41,10 @@
 		"tslint-loader": "^3.3.0",
 		"typescript": "^2.6.2",
 		"vsce": "^1.39.0",
-		"vscode": "^1.1.5"
+		"vscode": "^1.1.18"
 	},
 	"dependencies": {
-		"vscode-languageclient": "^3.5.1"
+		"vscode-languageclient": "^4.3.0"
 	},
 	"activationEvents": [
 		"onLanguage:ergo"
