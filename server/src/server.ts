@@ -40,7 +40,7 @@ connection.onInitialize((params) => {
 
 // The content of a text document has changed. This event is emitted
 // when the text document is first opened or when its content has changed.
-documents.onDidChangeContent(async (change) => {
+documents.onDidChangeContent(async (_) => {
 	// Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
 });
@@ -68,12 +68,12 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
             await modelManager.updateExternalModels();
         }
         modelManager.getModelFiles().map((f) => {
-            modelFilesContents.push(f.getDefinitions());
+            modelFilesContents.push({ name: '(CTO Buffer)', content: f.getDefinitions() });
         });
         
-        const compiled = await Ergo.compile(textDocument.getText(), modelFilesContents, 'javascript_cicero');
+        const compiled = await Ergo.compile([{ name: '(Ergo Buffer)', content: textDocument.getText() }], modelFilesContents, 'javascript_cicero');
         if(compiled.error) {
-            if(compiled.error.kind === 'CompilationError'){
+            if(compiled.error.kind === 'CompilationError' || compiled.error.kind === 'TypeError' ){
                 const range = {
                     start: { line: 0, character: 0 },
                     end:  { line: 0, character: 0 },

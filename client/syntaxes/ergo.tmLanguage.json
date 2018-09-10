@@ -16,6 +16,9 @@
 			"include": "#function-declaration"
 		},
 		{
+			"include": "#constant-declaration"
+		},
+		{
 			"include": "#type-declaration"
 		},
 		{
@@ -77,7 +80,7 @@
 		},
 		"ergo-contract-declaration": {
 			"name": "meta.var.expr.ergo",
-			"begin": "(?<!\\.|\\$)\\b(contract\\b)(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*))\\s+(over\\b)(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*))\\s*",
+			"begin": "(?<!\\.|\\$)\\b(contract\\b)(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*))\\s+(over\\b)(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*))(\\s+(state\\b)(?:(?:\\s+|(?<=\\*))([_$[:alpha:]][_$[:alnum:]]*)))?\\s*",
 			"beginCaptures": {
 				"1": {
 					"name": "keyword.control.contract.ergo"
@@ -89,6 +92,12 @@
 					"name": "keyword.control.over.ergo"
 				},
 				"4": {
+					"name": "entity.name.type.module.ergo"
+				},
+				"6": {
+					"name": "keyword.control.state.ergo"
+				},
+				"7": {
 					"name": "entity.name.type.module.ergo"
 				}
 			},
@@ -110,7 +119,7 @@
 					"name": "keyword.control.clause.ergo"
 				},
 				"2": {
-					"name": "entity.name.clause.ergo"
+					"name": "entity.name.function.ergo"
 				}
 			},
 			"end": "(?=;|\\})|(?<=\\})",
@@ -128,19 +137,19 @@
 					"include": "#return-type"
 				},
 				{
+					"include": "#emit-type"
+				},
+				{
 					"include": "#decl-block"
 				}
 			]
 		},
 		"var-expr": {
 			"name": "meta.var.expr.ergo",
-			"begin": "(?<!\\.|\\$)((\\bdefine)\\s+)\\b(variable)\\b(?!\\$)",
+			"begin": "(?<!\\.|\\$)((\\blet)\\s+)(?!\\$)",
 			"beginCaptures": {
 				"2": {
-					"name": "keyword.control.define.ergo"
-				},
-				"3": {
-					"name": "storage.type.ergo"
+					"name": "keyword.control.let.ergo"
 				}
 			},
 			"end": "(?=$|;|}|(\\s+(of|in)\\s+))",
@@ -371,9 +380,6 @@
 					"include": "#literal"
 				},
 				{
-					"include": "#function-declaration"
-				},
-				{
 					"include": "#class-or-interface-declaration"
 				},
 				{
@@ -418,7 +424,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.flow.ergo",
-					"match": "(?<!\\.|\\$)\\b(return|(set\\s+state)|emit)\\b(?!\\$)"
+					"match": "(?<!\\.|\\$)\\b(return|(set\\s+state)|throw|emit)\\b(?!\\$)"
 				},
 				{
 					"name": "keyword.control.match.ergo",
@@ -450,6 +456,9 @@
 				},
 				{
 					"include": "#function-declaration"
+				},
+				{
+					"include": "#constant-declaration"
 				},
 				{
 					"include": "#class-or-interface-declaration"
@@ -497,7 +506,7 @@
 					"name": "keyword.control.export.ergo"
 				},
 				"2": {
-					"name": "storage.type.type.ergo"
+					"name": "storageg.type.type.ergo"
 				},
 				"3": {
 					"name": "entity.name.type.ergo"
@@ -1236,9 +1245,9 @@
 					"name": "keyword.control.define.ergo"
 				},
 				"3": {
-					"name": "storage.type.function.ergo"
+					"name": "keyword.control.function.ergo"
 				},
-				"": {
+				"4": {
 					"name": "entity.name.function.ergo"
 				}
 			},
@@ -1258,6 +1267,33 @@
 				},
 				{
 					"include": "#decl-block"
+				}
+			]
+		},
+		"constant-declaration": {
+			"name": "meta.constant.ergo",
+			"begin": "(?<!\\.|\\$)((\\bdefine)\\s+)\\b(constant\\b)(?!\\$)",
+			"beginCaptures": {
+				"2": {
+					"name": "keyword.control.define.ergo"
+				},
+				"3": {
+					"name": "keyword.control.constant.ergo"
+				}
+			},
+			"end": "(?=$|;|}|(\\s+(of|in)\\s+))",
+			"patterns": [
+				{
+					"include": "#var-single-variable"
+				},
+				{
+					"include": "#variable-initializer"
+				},
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#punctuation-comma"
 				}
 			]
 		},
@@ -1534,6 +1570,27 @@
 					"name": "keyword.operator.type.annotation.ergo"
 				}
 			},
+			"end": "(?<!:)((?=$)|(?=\\{|;|//|\\}|\\bemits\\b))",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#throws-declaration"
+				},
+				{
+					"include": "#type"
+				}
+			]
+		},
+		"emit-type": {
+			"name": "meta.return.emittype.ergo",
+			"begin": "\\s*(emits\\b)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.emits.ergo"
+				}
+			},
 			"end": "(?<!:)((?=$)|(?=\\{|;|//|\\}))",
 			"patterns": [
 				{
@@ -1654,7 +1711,7 @@
 		},
 		"type-builtin-literals": {
 			"name": "support.type.builtin.ergo",
-			"match": "(?<!\\.|\\$)\\b(this|true|false|contract|state|now)\\b(?!\\$)"
+			"match": "(?<!\\.|\\$)\\b(true|false|contract|state|now)\\b(?!\\$)"
 		},
 		"type-paren-or-function-parameters": {
 			"name": "meta.type.paren.cover.ergo",
@@ -1724,6 +1781,44 @@
 							"include": "#function-parameters"
 						}
 					]
+				}
+			]
+		},
+		"type-function-return-type": {
+			"name": "meta.type.function.return.ergo",
+			"begin": "=>",
+			"beginCaptures": {
+				"0": {
+					"name": "storage.type.function.arrow.ergo"
+				}
+			},
+			"end": "(?<!=>)(?=[,\\]\\)\\{\\}=;>]|//|$)",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"name": "meta.object.type.ergo",
+					"begin": "(?<==>)\\s*(\\{)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.block.ergo"
+						}
+					},
+					"end": "\\}",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.block.ergo"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#type-object-members"
+						}
+					]
+				},
+				{
+					"include": "#type"
 				}
 			]
 		},
@@ -2903,19 +2998,13 @@
 					"include": "#boolean-literal"
 				},
 				{
-					"include": "#null-literal"
-				},
-				{
-					"include": "#undefined-literal"
+					"include": "#none-literal"
 				},
 				{
 					"include": "#numericConstant-literal"
 				},
 				{
 					"include": "#array-literal"
-				},
-				{
-					"include": "#this-literal"
 				},
 				{
 					"include": "#contract-literal"
@@ -3002,13 +3091,17 @@
 				}
 			]
 		},
-		"this-literal": {
-			"name": "variable.language.this.ergo",
-			"match": "(?<!\\.|\\$)\\bthis\\b(?!\\$)"
+		"none-literal": {
+			"name": "variable.language.none.ergo",
+			"match": "(?<!\\.|\\$)\\bnone\\b(?!\\$)"
 		},
 		"contract-literal": {
 			"name": "variable.language.contract.ergo",
 			"match": "(?<!\\.|\\$)\\bcontract\\b(?!\\$)"
+		},
+		"clause-literal": {
+			"name": "variable.language.clause.ergo",
+			"match": "(?<!\\.|\\$)\\bclause\\b(?!\\$)"
 		},
 		"state-literal": {
 			"name": "variable.language.state.ergo",
