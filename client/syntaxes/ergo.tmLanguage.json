@@ -38,9 +38,6 @@
 					"include": "#enforce-statement"
 				},
 				{
-					"include": "#for-loop"
-				},
-				{
 					"include": "#control-statement"
 				},
 				{
@@ -319,6 +316,12 @@
 					"include": "#decl-block"
 				},
 				{
+					"include": "#for-loop"
+				},
+				{
+					"include": "#where-clause"
+				},
+				{
 					"include": "#expression-operators"
 				},
 				{
@@ -346,7 +349,7 @@
 				},
 				{
 					"name": "keyword.control.match.ergo",
-					"match": "(?<!\\.|\\$)\\b(case|default|match)\\b(?!\\$)"
+					"match": "(?<!\\.|\\$)\\b(with|else|match)\\b(?!\\$)"
 				},
 				{
 					"name": "keyword.control.conditional.ergo",
@@ -1148,30 +1151,40 @@
 			]
 		},
 		"for-loop": {
-			"begin": "(?<!\\.|\\$)\\b(foreach)\\s*(\\()",
+			"begin": "(?<!\\.|\\$)\\b(foreach)\\s*",
 			"beginCaptures": {
 				"1": {
-					"name": "keyword.control.loop.ergo"
-				},
-				"2": {
-					"name": "meta.brace.round.ergo"
+					"name": "keyword.control.foreach.ergo"
 				}
 			},
-			"end": "\\)",
+			"end": "\\b(in)\\b",
 			"endCaptures": {
 				"0": {
-					"name": "meta.brace.round.ergo"
+					"name": "keyword.control.in.ergo"
 				}
 			},
 			"patterns": [
 				{
-					"include": "#var-expr"
-				},
+					"include": "#expression"
+				}
+			]
+		},
+		"where-clause": {
+			"begin": "(?<!\\.|\\$)\\b(where)\\s*",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.foreach.ergo"
+				}
+			},
+			"end": "\\b(return)\\b",
+			"endCaptures": {
+				"0": {
+					"name": "keyword.control.return.ergo"
+				}
+			},
+			"patterns": [
 				{
 					"include": "#expression"
-				},
-				{
-					"include": "#punctuation-semicolon"
 				}
 			]
 		},
@@ -1624,6 +1637,9 @@
 					"include": "#none-literal"
 				},
 				{
+					"include": "#some-literal"
+				},
+				{
 					"include": "#numericConstant-literal"
 				},
 				{
@@ -1657,6 +1673,29 @@
 				},
 				{
 					"include": "#punctuation-comma"
+				}
+			]
+		},
+		"some-literal": {
+			"name": "meta.some.literal.ergo",
+			"begin": "(\\bsome\\b)\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.brace.round.ergo"
+				},
+				"1": {
+					"name": "variable.language.some.ergo"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "meta.brace.round.ergo"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
 				}
 			]
 		},
