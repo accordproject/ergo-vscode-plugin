@@ -10,16 +10,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_languageserver_1 = require("vscode-languageserver");
 const Ergo = require("@accordproject/ergo-compiler/lib/ergo");
+const CiceroModelManager = require("@accordproject/cicero-core/lib/ciceromodelmanager");
 const glob_1 = require("glob");
 const fs = require("fs");
-const composer_common_1 = require("composer-common");
+const composer_concerto_1 = require("composer-concerto");
 // Creates the LSP connection
 let connection = vscode_languageserver_1.createConnection(vscode_languageserver_1.ProposedFeatures.all);
 // Create a manager for open text documents
 let documents = new vscode_languageserver_1.TextDocuments();
 // The workspace folder this server is operating on
 let workspaceFolder;
-let modelManager = new composer_common_1.ModelManager();
+let modelManager = new CiceroModelManager();
 documents.onDidOpen((event) => {
     connection.console.log(`[Server(${process.pid}) ${workspaceFolder}] Document opened: ${event.document.uri}`);
 });
@@ -51,10 +52,10 @@ function validateTextDocument(textDocument) {
             const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
             const modelFilesContents = [];
             let newModels = false;
-            const modelFiles = glob_1.glob.sync(folder + "../**/*.cto");
+            const modelFiles = glob_1.glob.sync(folder + '../**/*.cto');
             for (const file of modelFiles) {
                 const contents = fs.readFileSync(file, 'utf8');
-                const modelFile = new composer_common_1.ModelFile(modelManager, contents, file);
+                const modelFile = new composer_concerto_1.ModelFile(modelManager, contents, file);
                 if (!modelManager.getModelFile(modelFile.getNamespace())) {
                     // only add if not existing
                     modelManager.addModelFile(contents, file, true);
@@ -68,7 +69,7 @@ function validateTextDocument(textDocument) {
             modelManager.getModelFiles().map((f) => {
                 modelFilesContents.push({ name: '(CTO Buffer)', content: f.getDefinitions() });
             });
-            const compiled = yield Ergo.compile([{ name: '(Ergo Buffer)', content: textDocument.getText() }], modelFilesContents, 'javascript_cicero');
+            const compiled = yield Ergo.compileToJavaScript([{ name: '(Ergo Buffer)', content: textDocument.getText() }], modelManager.getModels(), 'cicero', true);
             if (compiled.error) {
                 if (compiled.error.kind === 'CompilationError' || compiled.error.kind === 'TypeError') {
                     const range = {
