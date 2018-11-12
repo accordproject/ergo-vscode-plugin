@@ -5,9 +5,10 @@ import {
 	Diagnostic, DiagnosticSeverity, TextDocument
 } from 'vscode-languageserver';
 import * as Ergo from '@accordproject/ergo-compiler/lib/ergo';
+import * as CiceroModelManager from '@accordproject/cicero-core/lib/ciceromodelmanager';
 import { glob } from 'glob';
-import * as fs from "fs";
-import { ModelManager, ModelFile } from 'composer-common';
+import * as fs from 'fs';
+import { ModelFile } from 'composer-concerto';
 
 // Creates the LSP connection
 let connection = createConnection(ProposedFeatures.all);
@@ -18,7 +19,7 @@ let documents = new TextDocuments();
 // The workspace folder this server is operating on
 let workspaceFolder: string;
 
-let modelManager = new ModelManager();
+let modelManager = new CiceroModelManager();
 
 documents.onDidOpen((event) => {
 	connection.console.log(`[Server(${process.pid}) ${workspaceFolder}] Document opened: ${event.document.uri}`);
@@ -53,7 +54,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
         const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
         const modelFilesContents = [];
         let newModels = false;
-        const modelFiles = glob.sync(folder+"../**/*.cto");
+        const modelFiles = glob.sync(folder+'../**/*.cto');
         for (const file of modelFiles) {
             const contents = fs.readFileSync(file, 'utf8');
             const modelFile: any = new ModelFile(modelManager, contents, file);
@@ -71,7 +72,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
             modelFilesContents.push({ name: '(CTO Buffer)', content: f.getDefinitions() });
         });
         
-        const compiled = await Ergo.compile([{ name: '(Ergo Buffer)', content: textDocument.getText() }], modelFilesContents, 'javascript_cicero');
+        const compiled = await Ergo.compileToJavaScript([{ name: '(Ergo Buffer)', content: textDocument.getText() }], modelManager.getModels(), 'cicero', true);
         if(compiled.error) {
             if(compiled.error.kind === 'CompilationError' || compiled.error.kind === 'TypeError' ){
                 const range = {
