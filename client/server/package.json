@@ -1,6 +1,6 @@
 {
 	"name": "accordproject-vscode-server",
-	"description": "A language server example demoing servers per workspace folder",
+	"description": "A language server for Ergo, the smart contract domain-specific language from the Accord Project",
 	"version": "0.5.2",
 	"license": "Apache-2.0",
 	"engines": {
