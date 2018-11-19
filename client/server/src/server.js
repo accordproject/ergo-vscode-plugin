@@ -78,7 +78,7 @@ function validateTextDocument(textDocument) {
             });
             // Find all ergo files in ./ relative to this file
             const ergoFilesContents = [{ name: '(Ergo Buffer)', content: textDocument.getText() }];
-            const ergoFiles = glob_1.glob.sync(`{${folder},${parentDir}/models/}**/*.ergo`);
+            const ergoFiles = glob_1.glob.sync(`{${folder},${parentDir}/lib/}**/*.ergo`);
             for (const file of ergoFiles) {
                 const contents = fs.readFileSync(file, 'utf8');
                 ergoFilesContents.push({ name: file, content: contents });
