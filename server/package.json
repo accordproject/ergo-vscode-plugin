@@ -1,7 +1,7 @@
 {
 	"name": "accordproject-vscode-server",
 	"description": "A language server example demoing servers per workspace folder",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"license": "Apache-2.0",
 	"engines": {
 		"node": "*"
@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@accordproject/ergo-compiler": "0.5.4",
-		"@accordproject/cicero-core": "0.9.6",
+		"@accordproject/cicero-core": "0.9.7",
 		"composer-concerto": "0.60.0",
 		"glob": "^7.1.2",
 		"vscode-languageserver": "^4.3.0"
