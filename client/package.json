@@ -4,7 +4,7 @@
 	"description": "Accord Project plugin for Visual Studio Code to provide syntax highlighting for Ergo code (.ergo) and template grammar (.tem) files.",
 	"author": "Clause",
 	"license": "Apache-2.0",
-	"version": "0.5.2",
+	"version": "0.5.7",
 	"publisher": "accordproject",
 	"icon": "icon.png",
 	"repository": {
