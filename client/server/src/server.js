@@ -15,6 +15,7 @@ const glob_1 = require("glob");
 const fs = require("fs");
 const path = require("path");
 const composer_concerto_1 = require("composer-concerto");
+const fileUriToPath_1 = require("./fileUriToPath");
 // Creates the LSP connection
 let connection = vscode_languageserver_1.createConnection(vscode_languageserver_1.ProposedFeatures.all);
 // Create a manager for open text documents
@@ -55,12 +56,14 @@ function validateTextDocument(textDocument) {
         try {
             // Find all cto files in ./ relative to this file or in the parent director
             // if this is a Cicero template.
-            const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
+            const pathStr = path.resolve(fileUriToPath_1.default(textDocument.uri));
+            const folder = pathStr.substring(0, pathStr.lastIndexOf("/") + 1);
             const modelFilesContents = [];
             let newModels = false;
             const parentDir = path.resolve(`${folder}../`);
             const modelFiles = glob_1.glob.sync(`{${folder},${parentDir}/models/}**/*.cto`);
             for (const file of modelFiles) {
+                connection.console.log(file);
                 const contents = fs.readFileSync(file, 'utf8');
                 const modelFile = new composer_concerto_1.ModelFile(modelManagers[textDocument.uri], contents, file);
                 if (!modelManagers[textDocument.uri].getModelFile(modelFile.getNamespace())) {

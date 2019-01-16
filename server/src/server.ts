@@ -10,6 +10,7 @@ import { glob } from 'glob';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ModelFile } from 'composer-concerto';
+import fileUriToPath from './fileUriToPath';
 
 // Creates the LSP connection
 let connection = createConnection(ProposedFeatures.all);
@@ -57,13 +58,15 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     try {
         // Find all cto files in ./ relative to this file or in the parent director
         // if this is a Cicero template.
-        const folder = textDocument.uri.match(/^file:\/\/(.*\/)(.*)/)[1];
+        const pathStr = path.resolve(fileUriToPath(textDocument.uri));
+        const folder = pathStr.substring(0,pathStr.lastIndexOf("/")+1);
         const modelFilesContents = [];
         let newModels = false;
         const parentDir = path.resolve(`${folder}../`);
         const modelFiles = glob.sync(`{${folder},${parentDir}/models/}**/*.cto`);
-        
+       
         for (const file of modelFiles) {
+            connection.console.log(file);
             const contents = fs.readFileSync(file, 'utf8');
             const modelFile: any = new ModelFile(modelManagers[textDocument.uri], contents, file);
             if (!modelManagers[textDocument.uri].getModelFile(modelFile.getNamespace())) {
