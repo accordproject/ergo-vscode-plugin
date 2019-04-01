@@ -91,12 +91,9 @@ function validateTextDocument(textDocument) {
                         thisTemplateLogic.updateLogic(contents, file);
                     }
                 }
-                connection.console.log('COMPILING...');
                 const compiled = yield thisTemplateLogic.compileLogic(true);
-                connection.console.log('...SUCCESS');
             }
             catch (error) {
-                connection.console.log('...ERROR!' + JSON.stringify(error));
                 const descriptor = error.descriptor;
                 if (descriptor.kind === 'CompilationError' || descriptor.kind === 'TypeError') {
                     const range = {
@@ -134,7 +131,6 @@ function validateTextDocument(textDocument) {
             connection.console.error(error.message);
             connection.console.error(error.stack);
         }
-        // Send the computed diagnostics to VS Code.
         connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     });
 }
