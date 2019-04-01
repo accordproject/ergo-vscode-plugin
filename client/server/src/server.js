@@ -9,19 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_languageserver_1 = require("vscode-languageserver");
-const Ergo = require("@accordproject/ergo-compiler/lib/ergo");
-const CiceroModelManager = require("@accordproject/cicero-core/lib/ciceromodelmanager");
 const glob_1 = require("glob");
 const fs = require("fs");
 const path = require("path");
-const composer_concerto_1 = require("composer-concerto");
 const fileUriToPath_1 = require("./fileUriToPath");
+const ergo_compiler_1 = require("@accordproject/ergo-compiler");
+const composer_concerto_1 = require("composer-concerto");
 // Creates the LSP connection
 let connection = vscode_languageserver_1.createConnection(vscode_languageserver_1.ProposedFeatures.all);
 // Create a manager for open text documents
 let documents = new vscode_languageserver_1.TextDocuments();
 // Cache the modelManager instances for each document
-let modelManagers = {};
+let templateLogics = {};
 // The workspace folder this server is operating on
 let workspaceFolder;
 documents.onDidOpen((event) => {
@@ -42,68 +41,79 @@ connection.onInitialize((params) => {
 });
 // The content of a text document has changed. This event is emitted
 // when the text document is first opened or when its content has changed.
-documents.onDidChangeContent((_) => __awaiter(this, void 0, void 0, function* () {
+documents.onDidChangeContent((change) => __awaiter(this, void 0, void 0, function* () {
     // Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
 }));
 // This function is not currently triggered by changes to model files, only ergo files
 function validateTextDocument(textDocument) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!modelManagers[textDocument.uri]) {
-            modelManagers[textDocument.uri] = new CiceroModelManager();
+        const pathStr = path.resolve(fileUriToPath_1.default(textDocument.uri));
+        const folder = pathStr.substring(0, pathStr.lastIndexOf("/") + 1);
+        const parentDir = path.resolve(`${folder}../`);
+        let thisTemplateLogic = templateLogics[parentDir];
+        if (!thisTemplateLogic) {
+            thisTemplateLogic = new ergo_compiler_1.TemplateLogic('cicero');
+            templateLogics[parentDir] = thisTemplateLogic;
         }
+        const thisModelManager = thisTemplateLogic.getModelManager();
         let diagnostics = [];
         try {
             // Find all cto files in ./ relative to this file or in the parent director
             // if this is a Cicero template.
-            const pathStr = path.resolve(fileUriToPath_1.default(textDocument.uri));
-            const folder = pathStr.substring(0, pathStr.lastIndexOf("/") + 1);
-            const modelFilesContents = [];
             let newModels = false;
-            const parentDir = path.resolve(`${folder}../`);
             const modelFiles = glob_1.glob.sync(`{${folder},${parentDir}/models/}**/*.cto`);
             for (const file of modelFiles) {
                 connection.console.log(file);
                 const contents = fs.readFileSync(file, 'utf8');
-                const modelFile = new composer_concerto_1.ModelFile(modelManagers[textDocument.uri], contents, file);
-                if (!modelManagers[textDocument.uri].getModelFile(modelFile.getNamespace())) {
+                const modelFile = new composer_concerto_1.ModelFile(thisModelManager, contents, file);
+                if (!thisModelManager.getModelFile(modelFile.getNamespace())) {
                     // only add if not existing
-                    modelManagers[textDocument.uri].addModelFile(contents, file, true);
+                    thisModelManager.addModelFile(contents, file, true);
                     newModels = true;
                 }
             }
             // Only pull external models if a new file was added to the model manager
             if (newModels) {
-                yield modelManagers[textDocument.uri].updateExternalModels();
+                yield thisModelManager.updateExternalModels();
             }
-            modelManagers[textDocument.uri].getModelFiles().map((f) => {
-                modelFilesContents.push({ name: '(CTO Buffer)', content: f.getDefinitions() });
-            });
-            // Find all ergo files in ./ relative to this file
-            const ergoFilesContents = [{ name: '(Ergo Buffer)', content: textDocument.getText() }];
-            const ergoFiles = glob_1.glob.sync(`{${folder},${parentDir}/lib/}**/*.ergo`);
-            for (const file of ergoFiles) {
-                const contents = fs.readFileSync(file, 'utf8');
-                ergoFilesContents.push({ name: file, content: contents });
+            try {
+                // Find all ergo files in ./ relative to this file
+                const ergoFiles = glob_1.glob.sync(`{${folder},${parentDir}/lib/}**/*.ergo`);
+                for (const file of ergoFiles) {
+                    if (file === pathStr) {
+                        // Update the current file being edited
+                        thisTemplateLogic.updateLogic(textDocument.getText(), pathStr);
+                    }
+                    else {
+                        connection.console.log(file);
+                        const contents = fs.readFileSync(file, 'utf8');
+                        thisTemplateLogic.updateLogic(contents, file);
+                    }
+                }
+                connection.console.log('COMPILING...');
+                const compiled = yield thisTemplateLogic.compileLogic(true);
+                connection.console.log('...SUCCESS');
             }
-            const compiled = yield Ergo.compileToJavaScript(ergoFilesContents, modelManagers[textDocument.uri].getModels(), 'cicero', true);
-            if (compiled.error) {
-                if (compiled.error.kind === 'CompilationError' || compiled.error.kind === 'TypeError') {
+            catch (error) {
+                connection.console.log('...ERROR!' + JSON.stringify(error));
+                const descriptor = error.descriptor;
+                if (descriptor.kind === 'CompilationError' || descriptor.kind === 'TypeError') {
                     const range = {
                         start: { line: 0, character: 0 },
                         end: { line: 0, character: 0 },
                     };
-                    if (compiled.error.locstart.line > 0) {
-                        range.start = { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character };
+                    if (descriptor.locstart.line > 0) {
+                        range.start = { line: descriptor.locstart.line - 1, character: descriptor.locstart.character };
                         range.end = range.start;
                     }
-                    if (compiled.error.locend.line > 0) {
-                        range.end = { line: compiled.error.locend.line - 1, character: compiled.error.locend.character };
+                    if (descriptor.locend.line > 0) {
+                        range.end = { line: descriptor.locend.line - 1, character: descriptor.locend.character };
                     }
                     diagnostics.push({
                         severity: vscode_languageserver_1.DiagnosticSeverity.Error,
                         range,
-                        message: compiled.error.message,
+                        message: descriptor.message,
                         source: 'ergo'
                     });
                 }
@@ -111,10 +121,10 @@ function validateTextDocument(textDocument) {
                     diagnostics.push({
                         severity: vscode_languageserver_1.DiagnosticSeverity.Error,
                         range: {
-                            start: { line: compiled.error.locstart.line - 1, character: compiled.error.locstart.character },
-                            end: { line: compiled.error.locend.line - 1, character: compiled.error.locend.character },
+                            start: { line: descriptor.locstart.line - 1, character: descriptor.locstart.character },
+                            end: { line: descriptor.locend.line - 1, character: descriptor.locend.character },
                         },
-                        message: compiled.error.message,
+                        message: descriptor.message,
                         source: 'ergo'
                     });
                 }

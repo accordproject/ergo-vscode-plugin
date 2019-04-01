@@ -4,13 +4,14 @@ import {
 	createConnection, TextDocuments, ProposedFeatures, TextDocumentSyncKind,
 	Diagnostic, DiagnosticSeverity, TextDocument
 } from 'vscode-languageserver';
-import * as Ergo from '@accordproject/ergo-compiler/lib/ergo';
-import * as CiceroModelManager from '@accordproject/cicero-core/lib/ciceromodelmanager';
+
 import { glob } from 'glob';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ModelFile } from 'composer-concerto';
 import fileUriToPath from './fileUriToPath';
+
+import { TemplateLogic } from '@accordproject/ergo-compiler';
+import { ModelFile } from 'composer-concerto';
 
 // Creates the LSP connection
 let connection = createConnection(ProposedFeatures.all);
@@ -19,7 +20,7 @@ let connection = createConnection(ProposedFeatures.all);
 let documents = new TextDocuments();
 
 // Cache the modelManager instances for each document
-let modelManagers = {};
+let templateLogics = {};
 
 // The workspace folder this server is operating on
 let workspaceFolder: string;
@@ -44,82 +45,88 @@ connection.onInitialize((params) => {
 
 // The content of a text document has changed. This event is emitted
 // when the text document is first opened or when its content has changed.
-documents.onDidChangeContent(async (_) => {
-	// Revalidate any open text documents
+documents.onDidChangeContent(async (change) => {
+	  // Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
 });
 
 // This function is not currently triggered by changes to model files, only ergo files
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-    if(!modelManagers[textDocument.uri]){
-        modelManagers[textDocument.uri] = new CiceroModelManager();
+    const pathStr = path.resolve(fileUriToPath(textDocument.uri));
+    const folder = pathStr.substring(0,pathStr.lastIndexOf("/")+1);
+    const parentDir = path.resolve(`${folder}../`);
+    let thisTemplateLogic = templateLogics[parentDir];
+    if(!thisTemplateLogic){
+        thisTemplateLogic = new TemplateLogic('cicero');
+        templateLogics[parentDir] = thisTemplateLogic;
     }
+    const thisModelManager = thisTemplateLogic.getModelManager();
     let diagnostics: Diagnostic[] = [];
     try {
         // Find all cto files in ./ relative to this file or in the parent director
         // if this is a Cicero template.
-        const pathStr = path.resolve(fileUriToPath(textDocument.uri));
-        const folder = pathStr.substring(0,pathStr.lastIndexOf("/")+1);
-        const modelFilesContents = [];
         let newModels = false;
-        const parentDir = path.resolve(`${folder}../`);
         const modelFiles = glob.sync(`{${folder},${parentDir}/models/}**/*.cto`);
-       
+
         for (const file of modelFiles) {
             connection.console.log(file);
             const contents = fs.readFileSync(file, 'utf8');
-            const modelFile: any = new ModelFile(modelManagers[textDocument.uri], contents, file);
-            if (!modelManagers[textDocument.uri].getModelFile(modelFile.getNamespace())) {
+            const modelFile: any = new ModelFile(thisModelManager, contents, file);
+            if (!thisModelManager.getModelFile(modelFile.getNamespace())) {
                 // only add if not existing
-                modelManagers[textDocument.uri].addModelFile(contents, file, true);
+                thisModelManager.addModelFile(contents, file, true);
                 newModels = true;
             }
         }
 
         // Only pull external models if a new file was added to the model manager
         if(newModels){
-            await modelManagers[textDocument.uri].updateExternalModels();
+            await thisModelManager.updateExternalModels();
         }
-        modelManagers[textDocument.uri].getModelFiles().map((f) => {
-            modelFilesContents.push({ name: '(CTO Buffer)', content: f.getDefinitions() });
-        });
 
-        // Find all ergo files in ./ relative to this file
-        const ergoFilesContents = [{ name: '(Ergo Buffer)', content: textDocument.getText() }];
-        const ergoFiles = glob.sync(`{${folder},${parentDir}/lib/}**/*.ergo`);
-        for (const file of ergoFiles) {
-            const contents = fs.readFileSync(file, 'utf8');
-            ergoFilesContents.push({ name: file, content: contents });
-        }
-        
-        const compiled = await Ergo.compileToJavaScript(ergoFilesContents, modelManagers[textDocument.uri].getModels(), 'cicero', true);
-        if(compiled.error) {
-            if(compiled.error.kind === 'CompilationError' || compiled.error.kind === 'TypeError' ){
+        try {
+            // Find all ergo files in ./ relative to this file
+            const ergoFiles = glob.sync(`{${folder},${parentDir}/lib/}**/*.ergo`);
+            for (const file of ergoFiles) {
+                if (file === pathStr) {
+                    // Update the current file being edited
+                    thisTemplateLogic.updateLogic(textDocument.getText(), pathStr);
+                } else {
+                    connection.console.log(file);
+                    const contents = fs.readFileSync(file, 'utf8');
+                    thisTemplateLogic.updateLogic(contents, file);
+                }
+            }
+
+            const compiled = await thisTemplateLogic.compileLogic(true);
+        } catch (error) {
+            const descriptor = error.descriptor;
+            if(descriptor.kind === 'CompilationError' || descriptor.kind === 'TypeError' ){
                 const range = {
                     start: { line: 0, character: 0 },
                     end:  { line: 0, character: 0 },
                 };
-                if(compiled.error.locstart.line > 0) {
-                    range.start =  { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character };
+                if(descriptor.locstart.line > 0) {
+                    range.start =  { line: descriptor.locstart.line-1, character: descriptor.locstart.character };
                     range.end = range.start;
                 }
-                if(compiled.error.locend.line > 0) {
-                    range.end = { line: compiled.error.locend.line-1, character: compiled.error.locend.character };
+                if(descriptor.locend.line > 0) {
+                    range.end = { line: descriptor.locend.line-1, character: descriptor.locend.character };
                 }
                 diagnostics.push({
                     severity: DiagnosticSeverity.Error,
                     range,
-                    message: compiled.error.message,
+                    message: descriptor.message,
                     source: 'ergo'
                 });
             } else {
                 diagnostics.push({
                     severity: DiagnosticSeverity.Error,
                     range: {
-                        start: { line: compiled.error.locstart.line-1, character: compiled.error.locstart.character },
-                        end:  { line: compiled.error.locend.line-1, character: compiled.error.locend.character },
+                        start: { line: descriptor.locstart.line-1, character: descriptor.locstart.character },
+                        end:  { line: descriptor.locend.line-1, character: descriptor.locend.character },
                     },
-                    message: compiled.error.message,
+                    message: descriptor.message,
                     source: 'ergo'
                 });
             }
@@ -128,8 +135,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
         connection.console.error(error.message);
         connection.console.error(error.stack);
     }
-
-    // Send the computed diagnostics to VS Code.
     connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
