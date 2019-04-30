@@ -1,7 +1,7 @@
 {
 	"name": "accordproject-vscode-server",
 	"description": "A language server example demoing servers per workspace folder",
-	"version": "0.7.0",
+	"version": "0.7.1",
 	"license": "Apache-2.0",
 	"engines": {
 		"node": "*"
@@ -11,7 +11,7 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
-		"@accordproject/ergo-compiler": "0.8.0",
+		"@accordproject/ergo-compiler": "0.8.1",
 		"composer-concerto": "0.70.2",
 		"glob": "^7.1.2",
 		"fast-safe-stringify": "2.0.5",
@@ -22,14 +22,14 @@
 		"@types/mocha": "^2.2.33",
 		"@types/node": "^6.0.106",
 		"chai": "^4.1.2",
+		"license-check-and-add": "^2.3.1",
 		"mocha": "^5.1.0",
-		"nyc": "^11.4.1",
+		"nyc": "^14.1.0",
 		"source-map-support": "^0.5.3",
 		"ts-node": "^4.1.0",
 		"tslint": "^5.9.1",
 		"tslint-loader": "^3.5.3",
-		"typescript": "^2.6.2",
-		"license-check-and-add": "^2.3.1"
+		"typescript": "^2.6.2"
 	},
 	"scripts": {
 		"install:server": "installServerIntoExtension ../client ./package.json ./tsconfig.json",
