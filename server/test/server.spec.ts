@@ -13,7 +13,6 @@
  */
 import * as assert from 'assert';
 import * as path from 'path';
-import { error } from 'util';
 import * as server from '../src/server';
 import { DocumentSymbolRequest } from 'vscode-languageserver/lib/main';
 import { dirname } from 'path';

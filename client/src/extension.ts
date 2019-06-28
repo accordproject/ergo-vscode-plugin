@@ -15,7 +15,7 @@
 
 import * as path from 'path';
 
-import { workspace, ExtensionContext } from 'vscode';
+import { workspace, window, ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
@@ -50,4 +50,7 @@ export function activate(context: ExtensionContext) {
 	// Push the disposable to the context's subscriptions so that the 
 	// client can be deactivated on extension deactivation
 	context.subscriptions.push(disposable);
+
+	// display deprecation message
+	window.showInformationMessage('WARNING: this extension is deprecated. Please install accordproject.cicero-vscode-extension.');
 }

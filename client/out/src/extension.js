@@ -43,6 +43,8 @@ function activate(context) {
     // Push the disposable to the context's subscriptions so that the 
     // client can be deactivated on extension deactivation
     context.subscriptions.push(disposable);
+    // display deprecation message
+    vscode_1.window.showInformationMessage('WARNING: this extension is deprecated. Please install accordproject.cicero-vscode-extension.');
 }
 exports.activate = activate;
 //# sourceMappingURL=extension.js.map
