@@ -1,6 +1,6 @@
 {
 	"name": "accordproject-vscode-plugin",
-	"displayName": "Accord Project",
+	"displayName": "Accord Project (deprecated)",
 	"description": "Accord Project plugin for Visual Studio Code to provide syntax highlighting for Ergo code (.ergo) and template grammar (.tem) files.",
 	"author": "Clause",
 	"license": "Apache-2.0",
